@@ -12,6 +12,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 //import android.graphics.Camera;
+import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.os.Build;
 import android.os.Bundle;
@@ -29,6 +30,7 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
@@ -105,19 +107,35 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void run() {
+
+
                 while(!toExit[0]){
                     // Your code
+                    SurfaceTexture st = new SurfaceTexture(MODE_PRIVATE);
+
+                    PhoneCamera = getCameraInstance();
+                    try {
+                        PhoneCamera.setPreviewTexture(st);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    PhoneCamera.setDisplayOrientation(0);
                     PhoneCamera.startPreview();
                     safeToTakePicture = true;
                     if(safeToTakePicture) {
-                        PhoneCamera.takePicture(null, null, mPicture);
-                        safeToTakePicture = false;
-                        PhoneCamera.stopPreview();
                         try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {
+                            PhoneCamera.takePicture(null, null, mPicture);
+                            safeToTakePicture = false;
+                            PhoneCamera.stopPreview();
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        } catch(Exception e) {
                             e.printStackTrace();
                         }
+
                     }
                 }
             }
@@ -130,8 +148,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 //                setCameraViewSize();
-                PhoneCamera = getCameraInstance();
-                PhoneCamera.setDisplayOrientation(0);
+
                 Start.setVisibility(View.GONE);
                 setClassificationView();
 
